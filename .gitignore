@@ -1,0 +1,13 @@
+# Ignore build files
+tags
+fishbowl*.gem
+fishbowl_test.rb
+
+
+# Ignore Mac DS_Store files
+.DS_Store
+**/.DS_Store
+
+# Ignore .env files
+.env
+tags

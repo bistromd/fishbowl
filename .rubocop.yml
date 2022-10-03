@@ -1,0 +1,14 @@
+AllCops:
+  NewCops: enable
+  Exclude:
+    - spec/**/*
+
+# Customize rules
+Style/Documentation:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Metrics/MethodLength:
+  Max: 20
+Metrics/ClassLength:
+  Max: 150
