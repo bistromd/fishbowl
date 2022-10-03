@@ -3,7 +3,7 @@ This project has taken lots of ideas from the original gem: https://github.com/z
 
 To use:
 ```ruby
-gem 'fishbowl', github: 'bistromd/fishbowl', branch: 'master'
+gem 'fishbowl', github: 'bistromd/fishbowl', branch: 'main'
 ```
 
 # To configure:
