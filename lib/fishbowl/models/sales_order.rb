@@ -46,7 +46,7 @@ module Fishbowl
       end
 
       def add_fulfillment_date(date)
-        @item_date_scheduled  = date
+        @order_date_scheduled = date
       end
 
       def add_address(address, city, state, zip, country = 'US')
@@ -61,8 +61,6 @@ module Fishbowl
       def add_items(items)
         @items = items
       end
-
-
 
       def create
         ImportRequest.create(ImportRequest::SALES_ORDER, [self])
@@ -147,6 +145,7 @@ module Fishbowl
                 xml.CustomerPO po_num unless po_num.nil?
                 xml.VendorPO vendor_po_num unless vendor_po_num.nil?
                 xml.QuickBooksClassName quick_books_class_name unless quick_books_class_name.nil?
+                xml.FirstShipDate order_date_scheduled unless order_date_scheduled.nil?
                 xml.BillTo do
                   xml.Name bill_to_name unless bill_to_name.nil?
                   xml.AddressField bill_to_address unless bill_to_address.nil?
@@ -177,6 +176,7 @@ module Fishbowl
                         xml.LineNumber item.line_number unless item.line_number.nil?
                         xml.QuickBooksClassName item.quick_books_class_name unless item.quick_books_class_name.nil?
                         xml.NewItemFlag 'false'
+                        xml.DateScheduledFulfillment order_date_scheduled unless order_date_scheduled.nil?
                         xml.ItemType item.item_type || '10'
                         xml.Status '10'
                         xml.AdjustPercentage item.adjust_percentage unless item.adjust_percentage.nil?

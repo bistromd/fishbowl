@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'yaml'
-
+require 'pry'
 module Fishbowl
   module Errors
     class ConnectionNotEstablished < RuntimeError; end
@@ -15,7 +15,7 @@ module Fishbowl
 
     def self.confirm_success_or_raise(code)
       success = 1000
-      code.to_i.eql? success ? true : raise(StatusError, status(code))
+      raise(StatusError, status(code)) unless code.to_i.eql?(success)
     end
 
     def self.status(code)
