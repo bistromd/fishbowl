@@ -39,7 +39,7 @@ module Fishbowl
     end
 
     def self.connect
-      return if @connection
+      return instance if @connection
 
       run_validations
       host = Fishbowl.configuration.host
