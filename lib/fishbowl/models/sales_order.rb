@@ -16,7 +16,6 @@ module Fishbowl
       attr_accessor(*ATTRIBUTES)
 
       ORDER_STATUSES          = [ESTIMATE = 10, ISSUED = 20, IN_PROGRESS = 25, FULFILLED = 60, VOID = 80].freeze
-      CARRIER_NAME            = 'H - FedEx Home Delivery'
       SHIPPING_TERMS          = 'Prepaid'
       FOB                     = 'Origin'
       SALES_ORDER             = 'SO'
@@ -24,7 +23,7 @@ module Fishbowl
       NONE                    = 'None'
       TAX_CODE                = 'NON'
 
-      def initialize(number, customer_name, location_group_name, note, status = ESTIMATE)
+      def initialize(number, customer_name, location_group_name, note, carrier: '', status: ESTIMATE)
         super
         @so_num                 = number
         @customer_contact       = @bill_to_name = @ship_to_name = @customer_name = customer_name
@@ -32,7 +31,7 @@ module Fishbowl
         @status                 = status
         @note                   = note
         @shipping_terms         = @payment_terms = SHIPPING_TERMS
-        @carrier_name           = CARRIER_NAME
+        @carrier_name           = carrier
         @fob                    = FOB
         @flag                   = SALES_ORDER
         @tax_rate_name          = NONE
@@ -49,29 +48,31 @@ module Fishbowl
         @order_date_scheduled = date
       end
 
-      def add_address(address, city, state, zip, country = 'US')
+      def add_address(address, city, state, zip, country: 'US', ship_to_residential: true)
         @bill_to_address      = @ship_to_address  = address
         @bill_to_city         = @ship_to_city     = city
         @bill_to_state        = @ship_to_state    = state
         @bill_to_zip          = @ship_to_zip      = zip
         @bill_to_country      = @ship_to_country  = country
-        @ship_to_residential  = true
+        @ship_to_residential  = ship_to_residential
       end
 
       def add_ship_to_residential(ship_to_residential)
         @ship_to_residential  = ship_to_residential
       end
 
-      def add_ship_to_address(address, city, state, zip, country = 'US')
+      def add_ship_to_address(name, address, city, state, zip, country: 'US', ship_to_residential: true)
+        @ship_to_name         = name
         @ship_to_address      = address
         @ship_to_city         = city
         @ship_to_state        = state
         @ship_to_zip          = zip
         @ship_to_country      = country
-        @ship_to_residential  = yes
+        @ship_to_residential  = ship_to_residential
       end
 
-      def add_bill_to_address(address, city, state, zip, country = 'US')
+      def add_bill_to_address(name, address, city, state, zip, country: 'US')
+        @bill_to_name         = name
         @bill_to_address      = address
         @bill_to_city         = city
         @bill_to_state        = state
