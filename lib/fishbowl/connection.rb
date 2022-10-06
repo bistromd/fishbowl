@@ -138,6 +138,11 @@ module Fishbowl
       size = [body.size].pack('L>')
       @connection.write(size)
       @connection.write(body)
+    rescue Errno::EPIPE
+      puts 'Broken pipe - retrying'
+      @connection = nil
+      connect
+      retry
     end
 
     def self.response(format)
