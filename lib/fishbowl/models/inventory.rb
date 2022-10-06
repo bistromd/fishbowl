@@ -10,8 +10,10 @@ module Fishbowl
       def self.all
         fishbowl_data = {}
         format_sql(Fishbowl::Connection.query(ALL_QUERY)).each do |data|
-          key = data[0]
-          fishbowl_data[key] = fishbowl_data.fetch(key) { {} }.merge({ data[2].to_i => data[1] })
+          key = data['SKU']
+          fishbowl_data[key] = fishbowl_data.fetch(key) { {} }.merge(
+            { data['LOCATIONGROUPID'].to_i => data['AvailableQuantity'].to_i }
+          )
         end
         fishbowl_data
       end
