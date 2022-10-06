@@ -163,6 +163,7 @@ module Fishbowl
                 xml.CustomerContact customer_contact unless customer_contact.nil?
                 xml.Status status unless status.nil?
                 xml.Carrier carrier_name unless carrier_name.nil?
+                xml.LocationGroup location_group_name unless location_group_name.nil?
                 xml.PaymentTerms payment_terms unless payment_terms.nil?
                 xml.CustomerPO po_num unless po_num.nil?
                 xml.VendorPO vendor_po_num unless vendor_po_num.nil?
