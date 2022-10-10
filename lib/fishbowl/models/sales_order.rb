@@ -157,6 +157,7 @@ module Fishbowl
           xml.request do
             xml.SOSaveRq do
               xml.SalesOrder do
+                xml.Note note unless note.nil?
                 xml.Number so_num unless so_num.nil?
                 xml.Salesman salesman unless salesman.nil?
                 xml.CustomerName customer_name unless customer_name.nil?
