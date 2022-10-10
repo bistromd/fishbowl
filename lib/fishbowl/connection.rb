@@ -65,14 +65,28 @@ module Fishbowl
       response = Nokogiri::XML.parse(data)
       status_code = response.xpath('/FbiXml/FbiMsgsRs').attr('statusCode').value
       @ticket = response.xpath('/FbiXml/Ticket/Key').text
+      Fishbowl::Errors.confirm_success_or_raise(status_code)
       [status_code, response]
+    rescue Fishbowl::Errors::RetryStatusError
+      retry_error(status_code)
     end
 
     def self.json_formatter(data)
       response = Nori.new(parser: :nokogiri).parse(data)
       status_code = response.dig('FbiXml', 'FbiMsgsRs', '@statusCode')
       @ticket = response.dig('FbiXml', 'Ticket', 'Key')
+
+      Fishbowl::Errors.confirm_success_or_raise(status_code)
       [status_code, response]
+    rescue Fishbowl::Errors::RetryStatusError
+      retry_error(status_code)
+    end
+
+    def self.retry_error(status_code)
+      puts 'Error.. retrying'
+      @connection = nil
+      connect
+      Fishbowl::Errors.confirm_success_or_raise(status_code)
     end
 
     def self.build_payload(payload)
@@ -133,6 +147,8 @@ module Fishbowl
     end
 
     def self.write(payload)
+      connect if @connection.nil?
+
       body = build_payload(payload).to_xml
       puts body if Fishbowl.configuration.debug
       size = [body.size].pack('L>')

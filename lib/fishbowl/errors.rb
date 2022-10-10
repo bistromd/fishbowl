@@ -11,9 +11,11 @@ module Fishbowl
     class EmptyResponse < RuntimeError; end
 
     class StatusError < RuntimeError; end
-
+    class RetryStatusError < RuntimeError; end
+    RETRY_STATUS_CODES = [1002, 1010, 1131].freeze
     def self.confirm_success_or_raise(code)
       success = 1000
+      raise(RetryStatusError, status(code)) if RETRY_STATUS_CODES.include? code.to_i
       raise(StatusError, status(code)) unless code.to_i.eql?(success)
     end
 

@@ -27,8 +27,7 @@ module Fishbowl
       end
 
       def self.send_request(payload, format = nil)
-        code, response = Fishbowl::Connection.request(payload, format)
-        Fishbowl::Errors.confirm_success_or_raise(code)
+        _code, response = Fishbowl::Connection.request(payload, format)
         puts 'Response successful' if Fishbowl.configuration.debug
 
         response
