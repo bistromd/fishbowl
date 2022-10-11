@@ -3,7 +3,7 @@
 require 'pry'
 module Fishbowl
   module Models
-    class SalesOrderDetail < SalesOrder
+    class SalesOrderDetail < Base
       ATTRIBUTES = %i[
         so_num status customer_name customer_contact bill_to_name bill_to_address bill_to_city bill_to_state bill_to_zip
         bill_to_country ship_to_name ship_to_address ship_to_city ship_to_state ship_to_zip ship_to_country
@@ -17,8 +17,53 @@ module Fishbowl
 
       attr_accessor(*ATTRIBUTES)
 
+      def initialize(**args)
+        super
+        (args.keys & ATTRIBUTES).each { |key| send("#{key}=", args[key]) }
+      end
+
+      def add_notes(note)
+        @note = note
+      end
+
+      def self.load_order(order_number)
+        order = find(order_number).dig('FbiXml', 'FbiMsgsRs', 'LoadSORs', 'SalesOrder')
+        new(so_num: order['Number'], status: order['Status'], customer_name: order['CustomerName'],
+            customer_contact: order['CustomerContact'], bill_to_name: order['BillTo']['Name'],
+            bill_to_address: order['BillTo']['AddressField'], bill_to_city: order['BillTo']['City'],
+            bill_to_state: order['BillTo']['State'], bill_to_zip: order['BillTo']['Zip'],
+            bill_to_country: order['BillTo']['Country'], ship_to_name: order['BillTo']['Name'],
+            ship_to_address: order['BillTo']['AddressField'], ship_to_city: order['BillTo']['City'],
+            ship_to_state: order['BillTo']['State'], ship_to_zip: order['BillTo']['Zip'],
+            ship_to_country: order['BillTo']['Country'], carrier_name: order['Carrier'],
+            tax_rate_name: order['TaxRateName'], priority_id: order['PriorityId'],
+            salesman: order['Salesman'], shipping_terms: order['ShippingTerms'],
+            payment_terms: order['PaymentTerms'], fob: order['FOB'], note: order['Note'],
+            quick_books_class_name: order['QuickBooksClassName'], location_group_name: order['LocationGroup'],
+            order_date_scheduled: order['DateScheduledFulfillment'], phone: order['Phone'], email: order['Email'],
+            product_quantity: order['Quantity'], uom: order['UOMCode'], product_price: order['ProductPrice'],
+            taxable: order['Taxable'])
+      end
+
       def save
         ImportRequest.create(ImportRequest::SALES_ORDER_DETAILS, [self])
+      end
+
+      def self.find(order_number, format = nil)
+        raise Fishbowl::Errors.ArgumentError if order_number.nil?
+
+        request = load_order_request(order_number)
+        send_request(request, format || FORMAT)
+      end
+
+      def self.load_order_request(order_number)
+        Nokogiri::XML::Builder.new do |xml|
+          xml.request do
+            xml.LoadSORq do
+              xml.Number order_number.to_s
+            end
+          end
+        end
       end
     end
   end

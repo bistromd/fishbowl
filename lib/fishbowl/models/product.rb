@@ -9,6 +9,13 @@ module Fishbowl
         all_descriptions[sku.to_s]
       end
 
+      def self.find(order_number)
+        raise Fishbowl::Errors.ArgumentError if order_number.nil?
+
+        request = load_order_request(order_number)
+        send_request(request, format || FORMAT)
+      end
+
       # All Products
       ALL_PRODUCTS = 'SELECT sku, description FROM PRODUCT WHERE activeFlag = TRUE'
       def self.all_descriptions
