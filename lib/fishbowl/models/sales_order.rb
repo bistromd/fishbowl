@@ -23,6 +23,27 @@ module Fishbowl
       NONE                    = 'None'
       TAX_CODE                = 'NON'
 
+      def self.replace_items(order_number, items)
+        order = find(order_number).dig('FbiXml', 'FbiMsgsRs', 'LoadSORs', 'SalesOrder')
+        sales_order = Fishbowl::Models::SalesOrder.new(
+          order['Number'], order['CustomerName'], order['LocationGroup'],
+          order['Note'], carrier: order['Carrier'], status: order['Status']
+        )
+        sales_order.add_ship_to_address(
+          order['Ship']['Name'], order['Ship']['AddressField'], order['Ship']['City'], order['Ship']['State'],
+          order['Ship']['Zip'], country: order['Ship']['Country']
+        )
+        sales_order.add_bill_to_address(
+          order['BillTo']['Name'], order['BillTo']['AddressField'], order['BillTo']['City'], order['BillTo']['State'],
+          order['BillTo']['Zip'], country: order['BillTo']['Country']
+        )
+        sales_order.add_items(items)
+        sales_order.add_fulfillment_date(order['DateScheduledFulfillment'])
+
+        void(order_number)
+        sales_order.save
+      end
+
       def initialize(number, customer_name, location_group_name, note, carrier: '', status: ESTIMATE)
         super
         @so_num                 = number
@@ -80,17 +101,9 @@ module Fishbowl
         @bill_to_country      = country
       end
 
-      def add_items(items)
-        @items = items
-      end
-
-      def create
-        ImportRequest.create(ImportRequest::SALES_ORDER, [self])
-      end
-
-      def save
-        Base.send_request(order_request, FORMAT)
-      end
+      def add_items(items) = @items = items
+      def create = ImportRequest.create(ImportRequest::SALES_ORDER, [self])
+      def save = Base.send_request(order_request, FORMAT)
 
       def self.find(order_number, format = nil)
         raise Fishbowl::Errors.ArgumentError if order_number.nil?
