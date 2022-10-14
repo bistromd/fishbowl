@@ -119,7 +119,9 @@ module Fishbowl
     end
 
     def self.login(host, port)
-      raise Fishbowl::Errors::ConnectionNotEstablished if (@connection = TCPSocket.new(host, port)).nil?
+      raise Fishbowl::Errors::ConnectionNotEstablished if (@connection = Socket.tcp(
+        host, port, connect_timeout: Fishbowl.configuration.timeout || 1
+      )).nil?
 
       code, _payload = request(login_payload)
       Fishbowl::Errors.confirm_success_or_raise(code)
