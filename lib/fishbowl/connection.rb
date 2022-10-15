@@ -156,7 +156,7 @@ module Fishbowl
       size = [body.size].pack('L>')
       @connection.write(size)
       @connection.write(body)
-    rescue Errno::EPIPE
+    rescue Errno::EPIPE, Errno::ETIMEDOUT
       puts 'Broken pipe - retrying'
       @connection = nil
       connect
