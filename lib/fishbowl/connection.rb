@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
-require 'nokogiri'
-require 'nori'
 require 'digest/md5'
 require 'mysql'
+require 'nokogiri'
+require 'nori'
+require 'socketry'
 
 module Fishbowl
   # Connection class for Fishbowl
@@ -119,8 +120,8 @@ module Fishbowl
     end
 
     def self.login(host, port)
-      raise Fishbowl::Errors::ConnectionNotEstablished if (@connection = Socket.tcp(
-        host, port, connect_timeout: Fishbowl.configuration.timeout || 1
+      raise Fishbowl::Errors::ConnectionNotEstablished if (@connection = Socketry::TCP::Socket.connect(
+        host, port
       )).nil?
 
       code, _payload = request(login_payload)
@@ -156,11 +157,6 @@ module Fishbowl
       size = [body.size].pack('L>')
       @connection.write(size)
       @connection.write(body)
-    rescue Errno::EPIPE, Errno::ETIMEDOUT
-      puts 'Broken pipe - retrying'
-      @connection = nil
-      connect
-      retry
     end
 
     def self.response(format)
