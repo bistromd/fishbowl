@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
   spec.homepage    = 'https://github.com/bistromd/fishbowl'
   spec.license     = 'MIT'
 
-  spec.add_dependency 'socketry', '>=0.5.1'
+  spec.add_runtime_dependency 'socketry', '~> 0.5', '>= 0.5.1'
 
   spec.metadata['rubygems_mfa_required']  = 'true'
   spec.required_ruby_version              = '>= 3.1.0'
