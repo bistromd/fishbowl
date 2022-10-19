@@ -23,10 +23,10 @@ module Fishbowl
       NONE                    = 'None'
       TAX_CODE                = 'NON'
 
-      def self.replace_items(order_number, items)
+      def self.replace_items(order_number, new_order_number, items)
         order = find(order_number).dig('FbiXml', 'FbiMsgsRs', 'LoadSORs', 'SalesOrder')
         sales_order = Fishbowl::Models::SalesOrder.new(
-          order['Number'], order['CustomerName'], order['LocationGroup'],
+          new_order_number, order['CustomerName'], order['LocationGroup'],
           order['Note'], carrier: order['Carrier'], status: order['Status']
         )
         sales_order.add_ship_to_address(
