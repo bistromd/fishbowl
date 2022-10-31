@@ -25,7 +25,8 @@ module Fishbowl
       def initialize(number, name, email)
         super
         @number = number
-        @name = name
+        # Limit name to 40 chars
+        @name = name[0...39]
         @email = email
         @status = NORMAL
         @active = true
