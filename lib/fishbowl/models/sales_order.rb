@@ -47,7 +47,7 @@ module Fishbowl
       def initialize(number, customer_name, location_group_name, note, carrier: '', status: ESTIMATE)
         super
         @so_num                 = number
-        @customer_contact       = @bill_to_name = @ship_to_name = @customer_name = customer_name
+        @customer_contact       = @bill_to_name = @ship_to_name = @customer_name = customer_name[0...39]
         @location_group_name    = location_group_name
         @status                 = status
         @note                   = note
