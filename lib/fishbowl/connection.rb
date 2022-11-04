@@ -43,8 +43,7 @@ module Fishbowl
       return instance if @connection
 
       run_validations
-      host = Fishbowl.configuration.host
-      port = Fishbowl.configuration.port.nil? ? DEFAULT_PORT : Fishbowl.configuration.port
+
       login(host, port)
 
       instance
@@ -69,8 +68,7 @@ module Fishbowl
       # Create new connection in 5 minutes
       @timeout = Time.now + 300
       close if @connection
-      connect
-
+      login
       @connection
     end
 
@@ -131,12 +129,13 @@ module Fishbowl
       raise Fishbowl::Errors::MissingPassword if Fishbowl.configuration.host.nil?
     end
 
-    def self.login(host, port)
+    def self.login
       raise Fishbowl::Errors::ConnectionNotEstablished if (@connection = Socketry::TCP::Socket.connect(
-        host, port
+        Fishbowl.configuration.host, Fishbowl.configuration.port.nil? ? DEFAULT_PORT : Fishbowl.configuration.port
       )).nil?
 
-      code, _payload = request(login_payload)
+      write(login_payload, @connection)
+      code, _payload = response(DEFAULT_FORMAT, @connection)
       Fishbowl::Errors.confirm_success_or_raise(code)
 
       raise 'Login failed' unless code.eql? SUCCESS
