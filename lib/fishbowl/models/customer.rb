@@ -42,7 +42,7 @@ module Fishbowl
         @is_default = true
         @address_name = SHIP_ADDRESS_NAME
         @address_type = MAIN_OFFICE_TYPE
-        @address_contact = ADDRESS_CONTACT
+        @address_contact = name || ADDRESS_CONTACT
         @residential = true
       end
 
