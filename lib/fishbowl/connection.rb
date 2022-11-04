@@ -43,9 +43,7 @@ module Fishbowl
       return instance if @connection
 
       run_validations
-
-      login(host, port)
-
+      login
       instance
     end
 
