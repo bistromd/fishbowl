@@ -63,7 +63,7 @@ module Fishbowl
       @connection = nil
     end
 
-    def conn
+    def self.conn
       return @connection if @connection && @timeout && @timeout < Time.now
 
       # Create new connection in 5 minutes
