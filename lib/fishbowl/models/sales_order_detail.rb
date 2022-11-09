@@ -21,6 +21,38 @@ module Fishbowl
         super
         (args.keys & ATTRIBUTES).each { |key| send("#{key}=", args[key]) }
       end
+      
+      def add_address(address, city, state, zip, country: 'US', ship_to_residential: true)
+        @bill_to_address      = @ship_to_address  = address
+        @bill_to_city         = @ship_to_city     = city
+        @bill_to_state        = @ship_to_state    = state
+        @bill_to_zip          = @ship_to_zip      = zip
+        @bill_to_country      = @ship_to_country  = country
+        @ship_to_residential  = ship_to_residential
+      end
+
+      def add_ship_to_residential(ship_to_residential)
+        @ship_to_residential  = ship_to_residential
+      end
+
+      def add_ship_to_address(name, address, city, state, zip, country: 'US', ship_to_residential: true)
+        @ship_to_name         = name
+        @ship_to_address      = address
+        @ship_to_city         = city
+        @ship_to_state        = state
+        @ship_to_zip          = zip
+        @ship_to_country      = country
+        @ship_to_residential  = ship_to_residential
+      end
+
+      def add_bill_to_address(name, address, city, state, zip, country: 'US')
+        @bill_to_name         = name
+        @bill_to_address      = address
+        @bill_to_city         = city
+        @bill_to_state        = state
+        @bill_to_zip          = zip
+        @bill_to_country      = country
+      end
 
       def add_notes(note)
         @note = note
