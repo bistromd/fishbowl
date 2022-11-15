@@ -137,6 +137,9 @@ module Fishbowl
       Fishbowl::Errors.confirm_success_or_raise(code)
 
       raise 'Login failed' unless code.eql? SUCCESS
+    rescue Errno::EPIPE
+      @connection = nil
+      retry
     end
 
     def self.login_payload
