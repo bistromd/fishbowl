@@ -53,6 +53,9 @@ module Fishbowl
       write(payload, connection)
       puts 'waiting for response...' if Fishbowl.configuration.debug
       response(format || DEFAULT_FORMAT, connection)
+    rescue Errno::EPIPE
+      @connection = nil
+      retry
     end
 
     def self.close
