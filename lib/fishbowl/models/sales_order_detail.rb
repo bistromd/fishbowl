@@ -21,7 +21,7 @@ module Fishbowl
         super
         (args.keys & ATTRIBUTES).each { |key| send("#{key}=", args[key]) }
       end
-      
+
       def add_address(address, city, state, zip, country: 'US', ship_to_residential: true)
         @bill_to_address      = @ship_to_address  = address
         @bill_to_city         = @ship_to_city     = city
@@ -56,6 +56,10 @@ module Fishbowl
 
       def add_notes(note)
         @note = note
+      end
+
+      def change_fulfillment_date(date)
+        @order_date_scheduled = date
       end
 
       def self.load_order(order_number)
