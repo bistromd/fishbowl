@@ -183,6 +183,7 @@ module Fishbowl
                 xml.VendorPO vendor_po_num unless vendor_po_num.nil?
                 xml.QuickBooksClassName quick_books_class_name unless quick_books_class_name.nil?
                 xml.FirstShipDate order_date_scheduled unless order_date_scheduled.nil?
+                xml.TaxRateName tax_rate_name unless tax_rate_name.nil?
                 xml.BillTo do
                   xml.Name bill_to_name unless bill_to_name.nil?
                   xml.AddressField bill_to_address unless bill_to_address.nil?
