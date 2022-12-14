@@ -64,6 +64,8 @@ module Fishbowl
 
       def self.load_order(order_number)
         order = find(order_number).dig('FbiXml', 'FbiMsgsRs', 'LoadSORs', 'SalesOrder')
+        return unless order
+
         new(so_num: order['Number'], status: order['Status'], customer_name: order['CustomerName'],
             customer_contact: order['CustomerContact'], bill_to_name: order['BillTo']['Name'],
             bill_to_address: order['BillTo']['AddressField'], bill_to_city: order['BillTo']['City'],
