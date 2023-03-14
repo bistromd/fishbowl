@@ -19,5 +19,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'socketry', '~> 0.5', '>= 0.5.1'
 
   spec.metadata['rubygems_mfa_required']  = 'true'
-  spec.required_ruby_version              = '>= 3.1.0'
+  spec.required_ruby_version              = '>= 3.0.3'
 end
