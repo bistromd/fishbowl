@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-require 'pry'
 module Fishbowl
   module Models
     class SalesOrderDetail < Base
