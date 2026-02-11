@@ -10,8 +10,6 @@ gem 'nokogiri', '>= 1.8.5'
 gem 'nori'
 gem 'rake'
 gem 'rspec'
-gem 'socketry', github: 'bistromd/socketry', branch: 'master'
-
 group :localtest do
   gem 'pry'
 end

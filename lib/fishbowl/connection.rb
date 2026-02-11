@@ -4,7 +4,7 @@ require 'digest/md5'
 require 'mysql'
 require 'nokogiri'
 require 'nori'
-require 'socketry'
+require 'socket'
 
 module Fishbowl
   # Connection class for Fishbowl
@@ -131,9 +131,11 @@ module Fishbowl
     end
 
     def self.login
-      raise Fishbowl::Errors::ConnectionNotEstablished if (@connection = Socketry::TCP::Socket.connect(
-        Fishbowl.configuration.host, Fishbowl.configuration.port.nil? ? DEFAULT_PORT : Fishbowl.configuration.port
-      )).nil?
+      @connection = TCPSocket.new(
+        Fishbowl.configuration.host,
+        Fishbowl.configuration.port.nil? ? DEFAULT_PORT : Fishbowl.configuration.port
+      )
+      raise Fishbowl::Errors::ConnectionNotEstablished if @connection.nil?
 
       write(login_payload, @connection)
       code, _payload = response(DEFAULT_FORMAT, @connection)
