@@ -7,7 +7,9 @@ module Fishbowl
       TYPES = [
         CUSTOMERS = 'ImportCustomers',
         SALES_ORDER = 'ImportSalesOrder',
-        SALES_ORDER_DETAILS = 'ImportSalesOrderDetails'
+        SALES_ORDER_DETAILS = 'ImportSalesOrderDetails',
+        PICKING_DATA = 'ImportPickingData',
+        SHIPPING_DATA = 'ImportShippingData'
       ].freeze
 
       def self.create(type, rows, format = nil)
@@ -18,7 +20,7 @@ module Fishbowl
                 xml.Type type
                 xml.Rows do
                   rows.map do |row|
-                    xml.Row row.to_csv
+                    xml.Row csv_row(row)
                   end
                 end
               end
@@ -26,6 +28,11 @@ module Fishbowl
           end, format || FORMAT
         )
       end
+
+      def self.csv_row(row)
+        row.is_a?(String) ? row : row.to_csv.chomp
+      end
+      private_class_method :csv_row
 
       def self.all(format = nil)
         send_request(

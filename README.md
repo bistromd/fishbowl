@@ -55,6 +55,54 @@ Fishbowl::Models::ImportRequest.all('json')
 Fishbowl::Models::ImportRequest.headers('ImportCustomers')
 ```
 
+## Ship Orders (self-contained ImportShippingData)
+
+Auto-ship with `Item` and `Quantity` — no pre-existing pick record required. Fishbowl generates the shipment, allocates items to Carton 1, and marks the order shipped.
+
+```ruby
+Fishbowl::Models::Shipping.ship(
+  Fishbowl::Models::Shipping.new(
+    '240312040007339785546',
+    'H - FedEx Home Delivery',
+    '1234432556',
+    item: '70-61-06',
+    quantity: 1
+  )
+)
+# Header: ShipNum,Carrier,TrackingNumber,Status,CartonNum,Fulfill,Item,Quantity
+# Row:    "S240312040007339785546","H - FedEx Home Delivery","1234432556","Shipped","1","true","70-61-06","1"
+
+# Multiple line items on the same order — one row per item:
+Fishbowl::Models::Shipping.ship([
+  {
+    order_number: '240312040007339785546',
+    carrier: 'H - FedEx Home Delivery',
+    tracking_number: '1234432556',
+    item: '70-61-06',
+    quantity: 1
+  },
+  {
+    order_number: '240312040007339785546',
+    carrier: 'H - FedEx Home Delivery',
+    tracking_number: '1234432556',
+    item: '70-53-05',
+    quantity: 2
+  }
+])
+```
+
+## Pick and Ship (optional two-step flow)
+
+If direct shipping fails, pick first (`ImportPickingData`) then ship:
+
+```ruby
+Fishbowl::Models::Shipping.pick_and_ship(
+  Fishbowl::Models::Shipping.new('251013145250439352332', 'H - FedEx Home Delivery', '1234432556')
+)
+
+Fishbowl::Models::Picking.import('251013145250439352332')
+```
+
 ## Create Sales order with sales order line items
 ```ruby
 items = Fishbowl::Models::SalesOrderItem.items({'70-61-06' => 1, '70-53-05' => 1})
@@ -71,11 +119,6 @@ sales_order_details.save
 ```
 
 ## Void Sales Order
-```ruby
-Fishbowl::Models::SalesOrder.void('TEST-ORDER-12345b')
-```
-
-## Issue Sales Order
 ```ruby
 Fishbowl::Models::SalesOrder.void('TEST-ORDER-12345b')
 ```
