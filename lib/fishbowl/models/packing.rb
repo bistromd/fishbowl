@@ -7,7 +7,7 @@ module Fishbowl
     # Step 2: pack picked items into a carton via ImportPackingData.
     class Packing < Base
       ATTRIBUTES = %i[order_number carton_num].freeze
-      HEADERS = %w[OrderNumber CartonNum].freeze
+      HEADERS = %w[SalesOrderNumber CartonNumber].freeze
       DEFAULT_CARTON_NUM = '1'
 
       attr_accessor(*ATTRIBUTES)
@@ -27,7 +27,7 @@ module Fishbowl
       end
 
       def self.header_row
-        HEADERS.join(',')
+        quoted_csv_row(HEADERS)
       end
 
       def self.pack(orders, format = nil)
