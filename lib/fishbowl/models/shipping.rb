@@ -4,28 +4,20 @@ require 'csv'
 
 module Fishbowl
   module Models
-    # Self-contained auto-ship via ImportShippingData — no pre-existing pick record required.
+    # Step 2: ship a picked order via ImportShippingData.
     class Shipping < Base
-      ATTRIBUTES = %i[ship_num carrier tracking_number status carton_num fulfill item quantity].freeze
-      HEADERS = %w[ShipNum Carrier TrackingNumber Status CartonNum Fulfill Item Quantity].freeze
+      ATTRIBUTES = %i[ship_num carrier tracking_number status].freeze
+      HEADERS = %w[ShipNum Carrier TrackingNumber Status].freeze
       STATUS_SHIPPED = 'Shipped'
-      DEFAULT_CARTON_NUM = '1'
-      DEFAULT_FULFILL = 'true'
-      DEFAULT_QUANTITY = '1'
 
-      attr_accessor :order_number, :carrier, :tracking_number, :status, :carton_num, :fulfill, :item, :quantity
+      attr_accessor :order_number, :carrier, :tracking_number, :status
 
-      def initialize(order_number, carrier, tracking_number, item:, quantity: DEFAULT_QUANTITY,
-                     status: STATUS_SHIPPED, carton_num: DEFAULT_CARTON_NUM, fulfill: DEFAULT_FULFILL)
+      def initialize(order_number, carrier, tracking_number, status: STATUS_SHIPPED)
         super
         @order_number = order_number.to_s.sub(/\AS/, '')
         @carrier = carrier
         @tracking_number = tracking_number
-        @item = item
-        @quantity = quantity.to_s
         @status = status
-        @carton_num = carton_num
-        @fulfill = fulfill
       end
 
       def ship_num
@@ -67,21 +59,11 @@ module Fishbowl
             shipment[:order_number] || shipment['order_number'],
             shipment[:carrier] || shipment['carrier'],
             shipment[:tracking_number] || shipment['tracking_number'],
-            item: shipment[:item] || shipment['item'],
-            quantity: shipment[:quantity] || shipment['quantity'] || DEFAULT_QUANTITY,
-            status: shipment[:status] || shipment['status'] || STATUS_SHIPPED,
-            carton_num: shipment[:carton_num] || shipment['carton_num'] || DEFAULT_CARTON_NUM,
-            fulfill: shipment[:fulfill] || shipment['fulfill'] || DEFAULT_FULFILL
+            status: shipment[:status] || shipment['status'] || STATUS_SHIPPED
           )
         else
-          order_number, carrier, tracking_number, item, quantity = shipment
-          new(
-            order_number,
-            carrier,
-            tracking_number,
-            item: item,
-            quantity: quantity || DEFAULT_QUANTITY
-          )
+          order_number, carrier, tracking_number, status = shipment
+          new(order_number, carrier, tracking_number, status: status || STATUS_SHIPPED)
         end
       end
       private_class_method :coerce
