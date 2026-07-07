@@ -55,15 +55,18 @@ Fishbowl::Models::ImportRequest.all('json')
 Fishbowl::Models::ImportRequest.headers('ImportCustomers')
 ```
 
-## Pick and Ship Orders (SaveRq + ShipRq)
+## Pick and Ship Orders (ImportPickingData + ImportShippingData)
 
-Step 1 commits the pick (`SaveRq`). Step 2 ships the order (`ShipRq`).
+Step 1 commits the pick. Step 2 ships the order.
 
 ```ruby
 # Both steps in sequence (recommended):
 Fishbowl::Models::Shipping.pick_and_ship(
   Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
 )
+# Step 1 pick:  OrderNumber,Action / "260706030519667150579","Commit"
+# Step 2 ship:  ShipNum,Carrier,TrackingNumber,Status,CartonNum
+#               "S260706030519667150579","H - FedEx Home Delivery","1234432556","Shipped","1"
 
 # Or run each step manually:
 Fishbowl::Models::Picking.pick('260706030519667150579')

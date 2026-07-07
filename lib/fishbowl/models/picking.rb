@@ -1,41 +1,38 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 module Fishbowl
   module Models
-    # Step 1: commit a pick via SaveRq.
+    # Step 1: commit a pick via ImportPickingData.
     class Picking < Base
-      TYPE_SO = 'SO'
-      STATUS_COMMITTED = 'Committed'
+      ATTRIBUTES = %i[order_number action].freeze
+      HEADERS = %w[OrderNumber Action].freeze
+      ACTION_COMMIT = 'Commit'
 
-      attr_accessor :order_number, :type, :status
+      attr_accessor(*ATTRIBUTES)
 
-      def initialize(order_number, type: TYPE_SO, status: STATUS_COMMITTED)
+      def initialize(order_number, action: ACTION_COMMIT)
         super
-        @order_number = order_number
-        @type = type
-        @status = status
+        @order_number = order_number.to_s.sub(/\AS/, '')
+        @action = action
+      end
+
+      def to_csv
+        self.class.quoted_csv_row(ATTRIBUTES.map { |attribute| send(attribute) })
+      end
+
+      def self.quoted_csv_row(values)
+        CSV.generate_line(values, force_quotes: true).chomp
+      end
+
+      def self.header_row
+        HEADERS.join(',')
       end
 
       def self.pick(orders, format = nil)
-        Array(orders).map { |order| pick_one(coerce(order), format) }
-      end
-
-      def self.pick_one(pick, format = nil)
-        send_request(pick_request(pick), format || FORMAT)
-      end
-
-      def self.pick_request(pick)
-        Nokogiri::XML::Builder.new do |xml|
-          xml.request do
-            xml.SaveRq do
-              xml.Pick do
-                xml.OrderNumber pick.order_number.to_s
-                xml.Type pick.type
-                xml.Status pick.status
-              end
-            end
-          end
-        end
+        picks = Array(orders).map { |order| coerce(order) }
+        ImportRequest.create(ImportRequest::PICKING_DATA, [header_row, *picks], format)
       end
 
       def self.coerce(order)
@@ -46,8 +43,7 @@ module Fishbowl
         elsif order.is_a?(Hash)
           new(
             order[:order_number] || order['order_number'],
-            type: order[:type] || order['type'] || TYPE_SO,
-            status: order[:status] || order['status'] || STATUS_COMMITTED
+            action: order[:action] || order['action'] || ACTION_COMMIT
           )
         else
           new(order)
