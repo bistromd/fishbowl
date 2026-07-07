@@ -55,6 +55,29 @@ Fishbowl::Models::ImportRequest.all('json')
 Fishbowl::Models::ImportRequest.headers('ImportCustomers')
 ```
 
+## Pick and Ship Orders (SaveRq + ShipRq)
+
+Step 1 commits the pick (`SaveRq`). Step 2 ships the order (`ShipRq`).
+
+```ruby
+# Both steps in sequence (recommended):
+Fishbowl::Models::Shipping.pick_and_ship(
+  Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
+)
+
+# Or run each step manually:
+Fishbowl::Models::Picking.pick('260706030519667150579')
+Fishbowl::Models::Shipping.ship(
+  Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
+)
+
+# Bulk:
+Fishbowl::Models::Shipping.pick_and_ship([
+  { order_number: '260706030519667150579', carrier: 'H - FedEx Home Delivery', tracking_number: '1234432556' },
+  { order_number: '260706030519667150580', carrier: 'UPS Ground', tracking_number: '1Z999AA10123456784' }
+])
+```
+
 ## Create Sales order with sales order line items
 ```ruby
 items = Fishbowl::Models::SalesOrderItem.items({'70-61-06' => 1, '70-53-05' => 1})
