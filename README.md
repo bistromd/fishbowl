@@ -55,22 +55,30 @@ Fishbowl::Models::ImportRequest.all('json')
 Fishbowl::Models::ImportRequest.headers('ImportCustomers')
 ```
 
-## Pick and Ship Orders (ImportPickingData + ImportShippingData)
+## Pick, Pack, Track, and Ship Orders
 
-Step 1 finishes the pick (`Action` = `Finish`) and must return `<ImportRs statusCode="1000"/>`
-before Step 2 ships the order with the `S`-prefixed `ShipNum`.
+Four-step fulfillment flow. Each step must return `<ImportRs statusCode="1000"/>` before the next runs.
 
 ```ruby
-# Both steps in sequence (recommended):
 Fishbowl::Models::Shipping.pick_and_ship(
   Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
 )
-# Step 1 pick:  OrderNumber,Action / "260706030519667150579","Finish"
-# Step 2 ship:  ShipNum,Carrier,TrackingNumber,Status,CartonNum
-#               "S260706030519667150579","H - FedEx Home Delivery","1234432556","Shipped","1"
+
+# Step 1 — ImportPickingData (Finish):
+#   OrderNumber,Action / "260706030519667150579","Finish"
+# Step 2 — ImportPackingData:
+#   OrderNumber,CartonNum / "260706030519667150579","1"
+# Step 3 — ImportShipCartonTracking:
+#   OrderNumber,CartonNum,TrackingNum / "260706030519667150579","1","1234432556"
+# Step 4 — ImportShippingData:
+#   ShipNum,Carrier,Status,CartonNum / "S260706030519667150579","H - FedEx Home Delivery","Shipped","1"
 
 # Or run each step manually:
 Fishbowl::Models::Picking.pick('260706030519667150579')
+Fishbowl::Models::Packing.pack('260706030519667150579')
+Fishbowl::Models::CartonTracking.track(
+  Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
+)
 Fishbowl::Models::Shipping.ship(
   Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
 )

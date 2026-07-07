@@ -4,10 +4,10 @@ require 'csv'
 
 module Fishbowl
   module Models
-    # Step 2: ship a picked order via ImportShippingData.
+    # Step 4: fulfill and close the shipment via ImportShippingData.
     class Shipping < Base
-      ATTRIBUTES = %i[ship_num carrier tracking_number status carton_num].freeze
-      HEADERS = %w[ShipNum Carrier TrackingNumber Status CartonNum].freeze
+      ATTRIBUTES = %i[ship_num carrier status carton_num].freeze
+      HEADERS = %w[ShipNum Carrier Status CartonNum].freeze
       STATUS_SHIPPED = 'Shipped'
       DEFAULT_CARTON_NUM = '1'
 
@@ -46,9 +46,9 @@ module Fishbowl
 
       def self.pick_and_ship(shipments, format = nil)
         shipment_rows = Array(shipments).map { |shipment| coerce(shipment) }
-        # Step 1: ImportPickingData — raises unless ImportRs statusCode is 1000
         Picking.pick(shipment_rows, format)
-        # Step 2: ImportShippingData — runs only after successful pick
+        Packing.pack(shipment_rows, format)
+        CartonTracking.track(shipment_rows, format)
         ship(shipment_rows, format)
       end
 

@@ -9,6 +9,8 @@ module Fishbowl
         SALES_ORDER = 'ImportSalesOrder',
         SALES_ORDER_DETAILS = 'ImportSalesOrderDetails',
         PICKING_DATA = 'ImportPickingData',
+        PACKING_DATA = 'ImportPackingData',
+        SHIP_CARTON_TRACKING = 'ImportShipCartonTracking',
         SHIPPING_DATA = 'ImportShippingData'
       ].freeze
 
