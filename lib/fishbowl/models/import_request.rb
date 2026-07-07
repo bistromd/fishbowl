@@ -13,7 +13,7 @@ module Fishbowl
       ].freeze
 
       def self.create(type, rows, format = nil)
-        send_request(
+        response = send_request(
           Nokogiri::XML::Builder.new do |xml|
             xml.request do
               xml.ImportRq do
@@ -27,6 +27,27 @@ module Fishbowl
             end
           end, format || FORMAT
         )
+        confirm_import_success!(response)
+        response
+      end
+
+      def self.confirm_import_success!(response)
+        status_code = import_status_code(response)
+        raise Fishbowl::Errors::StatusError, 'Missing ImportRs statusCode in Fishbowl response' if status_code.nil?
+
+        Fishbowl::Errors.confirm_success_or_raise(status_code)
+      end
+
+      def self.import_status_code(response)
+        case response
+        when Nokogiri::XML::Document, Nokogiri::XML::Element
+          response.at_xpath('//*[local-name()="ImportRs"]/@statusCode')&.value
+        else
+          import_rs = response.dig('FbiXml', 'FbiMsgsRs', 'ImportRs')
+          return unless import_rs
+
+          import_rs['@statusCode'] || import_rs['statusCode']
+        end
       end
 
       def self.csv_row(row)

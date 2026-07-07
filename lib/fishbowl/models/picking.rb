@@ -4,15 +4,15 @@ require 'csv'
 
 module Fishbowl
   module Models
-    # Step 1: commit a pick via ImportPickingData.
+    # Step 1: finish pick via ImportPickingData (creates the shipment record).
     class Picking < Base
       ATTRIBUTES = %i[order_number action].freeze
       HEADERS = %w[OrderNumber Action].freeze
-      ACTION_COMMIT = 'Commit'
+      ACTION_FINISH = 'Finish'
 
       attr_accessor(*ATTRIBUTES)
 
-      def initialize(order_number, action: ACTION_COMMIT)
+      def initialize(order_number, action: ACTION_FINISH)
         super
         @order_number = order_number.to_s.sub(/\AS/, '')
         @action = action
@@ -43,7 +43,7 @@ module Fishbowl
         elsif order.is_a?(Hash)
           new(
             order[:order_number] || order['order_number'],
-            action: order[:action] || order['action'] || ACTION_COMMIT
+            action: order[:action] || order['action'] || ACTION_FINISH
           )
         else
           new(order)

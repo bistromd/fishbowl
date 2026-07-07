@@ -46,7 +46,9 @@ module Fishbowl
 
       def self.pick_and_ship(shipments, format = nil)
         shipment_rows = Array(shipments).map { |shipment| coerce(shipment) }
+        # Step 1: ImportPickingData — raises unless ImportRs statusCode is 1000
         Picking.pick(shipment_rows, format)
+        # Step 2: ImportShippingData — runs only after successful pick
         ship(shipment_rows, format)
       end
 
