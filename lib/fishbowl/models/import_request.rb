@@ -11,7 +11,8 @@ module Fishbowl
         PICKING_DATA = 'ImportPickingData',
         PACKING_DATA = 'ImportPackingData',
         SHIP_CARTON_TRACKING = 'ImportShipCartonTracking',
-        SHIPPING_DATA = 'ImportShippingData'
+        SHIPPING_DATA = 'ImportShippingData',
+        ADD_INVENTORY = 'ImportAddInventory'
       ].freeze
 
       def self.create(type, rows, format = nil)

@@ -57,38 +57,88 @@ Fishbowl::Models::ImportRequest.headers('ImportCustomers')
 
 ## Pick, Pack, Track, and Ship Orders
 
-Four-step fulfillment flow. Each step must return `<ImportRs statusCode="1000"/>` before the next runs.
+Four-step flow using column names from **your** Fishbowl server. Run this first to verify headers for your version:
+
+```ruby
+ruby script/ship_diagnostic.rb headers
+```
 
 ```ruby
 Fishbowl::Models::Shipping.pick_and_ship(
   Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
 )
 
-# Step 1 — ImportPickingData (Finish):
-#   OrderNumber,Action / "260706030519667150579","Finish"
-# Step 2 — ImportPackingData:
-#   OrderNumber,CartonNum / "260706030519667150579","1"
-# Step 3 — ImportShipCartonTracking:
-#   OrderNumber,CartonNum,TrackingNum / "260706030519667150579","1","1234432556"
-# Step 4 — ImportShippingData:
-#   ShipNum,Carrier,Status,CartonNum / "S260706030519667150579","H - FedEx Home Delivery","Shipped","1"
-
-# Or run each step manually:
-Fishbowl::Models::Picking.pick('260706030519667150579')
-Fishbowl::Models::Packing.pack('260706030519667150579')
-Fishbowl::Models::CartonTracking.track(
-  Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
-)
-Fishbowl::Models::Shipping.ship(
-  Fishbowl::Models::Shipping.new('260706030519667150579', 'H - FedEx Home Delivery', '1234432556')
-)
-
-# Bulk:
-Fishbowl::Models::Shipping.pick_and_ship([
-  { order_number: '260706030519667150579', carrier: 'H - FedEx Home Delivery', tracking_number: '1234432556' },
-  { order_number: '260706030519667150580', carrier: 'UPS Ground', tracking_number: '1Z999AA10123456784' }
-])
+# Step 1 — ImportPickingData:  OrderNumber,Action / "ORDER","Finish"
+# Step 2 — ImportPackingData:   SONum / "260706030519667150579"
+# Step 3 — ImportShipCartonTracking: Ship Number,Carton Number,Tracking Number
+# Step 4 — ImportShippingData:  ShipNum,Date,Carrier,Carrier Service
 ```
+
+Local diagnostic script (uses `.env`):
+
+```bash
+ruby script/ship_diagnostic.rb inspect 260706030519667150579
+ruby script/ship_diagnostic.rb flow 260706030519667150579 "H - FedEx Home Delivery" 1234432556
+```
+
+### Scripts
+
+#### `script/ship_diagnostic.rb`
+
+Primary CLI for the pick/pack/track/ship flow and debugging.
+
+```bash
+# Inspect SO + shipment state via ExecuteQuery + LoadSORq
+ruby script/ship_diagnostic.rb inspect 260706030519667150579
+
+# Show server-specific import headers
+ruby script/ship_diagnostic.rb headers
+
+# Run the full pick → pack → track → ship flow
+ruby script/ship_diagnostic.rb flow 260706030519667150579 "H - FedEx Home Delivery" 1234432556
+
+# If the order was manually picked in the Fishbowl UI, skip pick and just pack/track/ship
+ruby script/ship_diagnostic.rb finish 260706030519667150579 "H - FedEx Home Delivery" 1234432556
+```
+
+#### `script/add_inventory_to_order_items.rb`
+
+Adds on-hand inventory for every **inventory-type** line item on a sales order using `ImportAddInventory`.
+
+- Automatically **skips non-inventory parts** (packaging, etc.)
+- For **tracked parts**, automatically supplies a lot number and expiration date (required by this Fishbowl server)
+
+```bash
+# Preview what will be imported (no changes)
+ruby script/add_inventory_to_order_items.rb 260706030039773411663 --dry-run
+
+# Import inventory adjustments for the order's items
+ruby script/add_inventory_to_order_items.rb 260706030039773411663
+
+# Override location if needed
+ruby script/add_inventory_to_order_items.rb 260706030039773411663 --location Stock
+```
+
+#### Fulfill in one command: add inventory + ship
+
+If pick returns success but **no shipment is created**, it's usually an inventory/allocation issue. This command adds inventory first, then runs the ship flow:
+
+```bash
+ruby script/ship_diagnostic.rb fulfill 260706030039773411663 "H - FedEx Home Delivery" 1234432556
+```
+
+### `.env` variables used by scripts
+
+See `.env.example` for the full list. Common ones:
+
+- `FISHBOWL_HOST`, `FISHBOWL_PORT`, `FISHBOWL_USERNAME`, `FISHBOWL_PASSWORD`
+- `FISHBOWL_APP_ID`, `FISHBOWL_APP_NAME`, `FISHBOWL_APP_DESCRIPTION`
+- `FISHBOWL_ENCODE_PASSWORD` (`true` recommended)
+- `FISHBOWL_MYSQL_URL` (optional; enables MySQL helpers)
+- `FISHBOWL_ORDER_NUMBER`, `FISHBOWL_CARRIER`, `FISHBOWL_TRACKING_NUMBER` (script defaults)
+- `FISHBOWL_INVENTORY_LOCATION` (defaults to `Stock` in the order’s location group)
+- `FISHBOWL_INVENTORY_DEFAULT_COST` (default unit cost when SO line has no price)
+- `FISHBOWL_INVENTORY_LOT_PREFIX`, `FISHBOWL_INVENTORY_EXPIRATION_DAYS`
 
 ## Create Sales order with sales order line items
 ```ruby
@@ -112,7 +162,7 @@ Fishbowl::Models::SalesOrder.void('TEST-ORDER-12345b')
 
 ## Issue Sales Order
 ```ruby
-Fishbowl::Models::SalesOrder.void('TEST-ORDER-12345b')
+Fishbowl::Models::SalesOrder.issue('TEST-ORDER-12345b')
 ```
 
 ## All Inventory

@@ -4,23 +4,27 @@ require 'csv'
 
 module Fishbowl
   module Models
-    # Step 3: attach tracking to a packed carton via ImportShipCartonTracking.
+    # Step 3: attach tracking via ImportShipCartonTracking.
     class CartonTracking < Base
-      ATTRIBUTES = %i[order_number carton_num tracking_num].freeze
-      HEADERS = %w[OrderNumber CartonNum TrackingNum].freeze
+      ATTRIBUTES = %i[ship_number carton_number tracking_number].freeze
+      HEADERS = ['Ship Number', 'Carton Number', 'Tracking Number'].freeze
       DEFAULT_CARTON_NUM = '1'
 
-      attr_accessor(*ATTRIBUTES)
+      attr_accessor :order_number, :carton_number, :tracking_number
 
-      def initialize(order_number, tracking_num, carton_num: DEFAULT_CARTON_NUM)
+      def initialize(order_number, tracking_number, carton_number: DEFAULT_CARTON_NUM)
         super
         @order_number = order_number.to_s.sub(/\AS/, '')
-        @tracking_num = tracking_num
-        @carton_num = carton_num.to_s
+        @tracking_number = tracking_number
+        @carton_number = carton_number.to_s
+      end
+
+      def ship_number
+        "S#{order_number}"
       end
 
       def to_csv
-        self.class.quoted_csv_row(ATTRIBUTES.map { |attribute| send(attribute) })
+        self.class.quoted_csv_row([ship_number, carton_number, tracking_number])
       end
 
       def self.quoted_csv_row(values)
@@ -40,16 +44,16 @@ module Fishbowl
         return shipment if shipment.is_a?(CartonTracking)
 
         if shipment.is_a?(Shipping)
-          new(shipment.order_number, shipment.tracking_number, carton_num: shipment.carton_num)
+          new(shipment.order_number, shipment.tracking_number, carton_number: shipment.carton_num)
         elsif shipment.is_a?(Hash)
           new(
             shipment[:order_number] || shipment['order_number'],
-            shipment[:tracking_number] || shipment['tracking_number'] || shipment[:tracking_num] || shipment['tracking_num'],
-            carton_num: shipment[:carton_num] || shipment['carton_num'] || DEFAULT_CARTON_NUM
+            shipment[:tracking_number] || shipment['tracking_number'],
+            carton_number: shipment[:carton_num] || shipment['carton_num'] || DEFAULT_CARTON_NUM
           )
         else
-          order_number, tracking_num, carton_num = shipment
-          new(order_number, tracking_num, carton_num: carton_num || DEFAULT_CARTON_NUM)
+          order_number, tracking_number, carton_number = shipment
+          new(order_number, tracking_number, carton_number: carton_number || DEFAULT_CARTON_NUM)
         end
       end
       private_class_method :coerce

@@ -102,6 +102,7 @@ module Fishbowl
     end
 
     def self.build_payload(payload)
+      puts payload.to_xml
       new_req = Nokogiri::XML::Builder.new do |xml|
         xml.FbiXml do
           if @ticket.nil?

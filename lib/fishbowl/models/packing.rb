@@ -4,22 +4,20 @@ require 'csv'
 
 module Fishbowl
   module Models
-    # Step 2: pack picked items into a carton via ImportPackingData.
+    # Step 2: pack via ImportPackingData (column: SONum).
     class Packing < Base
-      ATTRIBUTES = %i[order_number carton_num].freeze
-      HEADERS = %w[SalesOrderNumber CartonNumber].freeze
-      DEFAULT_CARTON_NUM = '1'
+      ATTRIBUTES = %i[so_num].freeze
+      HEADERS = %w[SONum].freeze
 
-      attr_accessor(*ATTRIBUTES)
+      attr_accessor :so_num
 
-      def initialize(order_number, carton_num: DEFAULT_CARTON_NUM)
+      def initialize(so_num)
         super
-        @order_number = order_number.to_s.sub(/\AS/, '')
-        @carton_num = carton_num.to_s
+        @so_num = so_num.to_s.sub(/\AS/, '')
       end
 
       def to_csv
-        self.class.quoted_csv_row(ATTRIBUTES.map { |attribute| send(attribute) })
+        self.class.quoted_csv_row([so_num])
       end
 
       def self.quoted_csv_row(values)
@@ -27,7 +25,7 @@ module Fishbowl
       end
 
       def self.header_row
-        quoted_csv_row(HEADERS)
+        HEADERS.join(',')
       end
 
       def self.pack(orders, format = nil)
@@ -38,16 +36,12 @@ module Fishbowl
       def self.coerce(order)
         return order if order.is_a?(Packing)
 
-        if order.is_a?(Shipping)
-          new(order.order_number, carton_num: order.carton_num)
-        elsif order.is_a?(Hash)
-          new(
-            order[:order_number] || order['order_number'],
-            carton_num: order[:carton_num] || order['carton_num'] || DEFAULT_CARTON_NUM
-          )
-        else
-          new(order)
-        end
+        number = case order
+                 when Shipping then order.order_number
+                 when Hash then order[:so_num] || order['so_num'] || order[:order_number] || order['order_number']
+                 else order
+                 end
+        new(number)
       end
       private_class_method :coerce
     end
